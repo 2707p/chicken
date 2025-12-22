@@ -4,11 +4,14 @@ import json
 import os
 import subprocess
 from tkinter import messagebox
+from command_recommender import CommandRecommenderUI
 
 root = tk.Tk()
 root.configure(bg="#ffc0cb")
 root.title("💕Terminal Helper💕")
 root.geometry("700x600")
+
+CommandRecommenderUI(root)
 
 # 최근입력기록저장용리스트
 recent_inputs = []
@@ -170,19 +173,6 @@ def execute():
 
 entry.bind("<Return>", lambda e: execute())
 
-# 실행 버튼
-button_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
-button_canvas.place(relx=0.5, rely=0.8, anchor="center", width=150, height=50)
 
-def draw_button(hover=False):
-    button_canvas.delete("all")
-    color = "#ff69b4" if hover else "#ff85a1"
-    create_rounded_rect(button_canvas, 2, 2, 148, 48, 15, fill=color)
-    button_canvas.create_text(75, 25, text="✨ 실행 ✨", fill="white", font=("Arial", 12, "bold"))
-
-draw_button()
-button_canvas.bind("<Enter>", lambda e: draw_button(True))
-button_canvas.bind("<Leave>", lambda e: draw_button(False))
-button_canvas.bind("<Button-1>", lambda e: execute())
 
 root.mainloop()
