@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 
 root = tk.Tk()
 root.configure(bg="#ffc0cb")
-root.title("Terminal Helper")
+root.title("💕Terminal Helper💕")
 root.geometry("700x600")
 
 # 명령어입력창
@@ -15,19 +15,19 @@ recommend_canvas = tk.Canvas(root, width=500, height=80, bg="#ffc0cb", highlight
 recommend_canvas.pack(padx=10, pady=5)
 
 # 구름 모양 그리기 (여러 원을 겹쳐서)
-recommend_canvas.create_oval(50, 30, 150, 70, fill="lightblue", outline="skyblue", width=2)
-recommend_canvas.create_oval(120, 20, 220, 70, fill="lightblue", outline="skyblue", width=2)
-recommend_canvas.create_oval(200, 25, 300, 70, fill="lightblue", outline="skyblue", width=2)
-recommend_canvas.create_oval(280, 30, 380, 70, fill="lightblue", outline="skyblue", width=2)
-recommend_canvas.create_oval(350, 35, 450, 70, fill="lightblue", outline="skyblue", width=2)
+recommend_canvas.create_oval(50, 30, 150, 70, fill="lightblue", outline="lightblue", width=2)
+recommend_canvas.create_oval(120, 20, 220, 70, fill="lightblue", outline="lightblue", width=2)
+recommend_canvas.create_oval(200, 25, 300, 70, fill="lightblue", outline="lightblue", width=2)
+recommend_canvas.create_oval(280, 30, 380, 70, fill="lightblue", outline="lightblue", width=2)
+recommend_canvas.create_oval(350, 35, 450, 70, fill="lightblue", outline="lightblue", width=2)
 
 # 구름 하단부를 부드럽게 연결
-recommend_canvas.create_oval(80, 40, 420, 75, fill="lightblue", outline="skyblue", width=2)
+recommend_canvas.create_oval(80, 40, 420, 75, fill="lightblue", outline="lightblue", width=2)
 
 # Text 위젯 추가 (이 부분이 빠져있었어요!)
-recommend_text = tk.Text(root, width=58, height=3, bg="lightblue", bd=0, 
+recommend_text = tk.Text(root, width=58, height=2, bg="lightblue", bd=0, 
                          font=("Arial", 10), relief="flat", highlightthickness=0)
-recommend_canvas.create_window(250, 45, window=recommend_text)
+recommend_canvas.create_window(250, 50, window=recommend_text)
 
 # 설명/출력창
 text = tk.Text(root, width=60, height=10, bg="white")
@@ -68,6 +68,7 @@ def show_text():
 
 # 실행버튼 
 button = tk.Button(root, text="실행", command=show_text)
+
 button.pack(pady=5)
 
 root.mainloop()
