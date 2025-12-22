@@ -1,0 +1,77 @@
+{
+  "ls": {
+    "description": "현재 폴더에 있는 파일과 폴더 목록을 보여준다.",
+    "danger": "low",
+    "example": "ls"
+  },
+  "ls -l": {
+    "description": "파일 목록을 상세 정보(권한, 크기, 날짜)와 함께 보여준다.",
+    "danger": "low",
+    "example": "ls -l"
+  },
+  "pwd": {
+    "description": "현재 내가 위치한 폴더의 전체 경로를 출력한다.",
+    "danger": "low",
+    "example": "pwd"
+  },
+  "cd": {
+    "description": "다른 폴더로 이동한다.",
+    "danger": "low",
+    "example": "cd Documents"
+  },
+  "mkdir": {
+    "description": "새로운 폴더를 생성한다.",
+    "danger": "medium",
+    "example": "mkdir test_folder"
+  },
+  "touch": {
+    "description": "빈 파일을 새로 생성한다.",
+    "danger": "medium",
+    "example": "touch hello.txt"
+  },
+  "cp": {
+    "description": "파일이나 폴더를 복사한다.",
+    "danger": "medium",
+    "example": "cp a.txt b.txt"
+  },
+  "mv": {
+    "description": "파일이나 폴더를 이동하거나 이름을 변경한다.",
+    "danger": "medium",
+    "example": "mv old.txt new.txt"
+  },
+  "cat": {
+    "description": "텍스트 파일의 내용을 터미널에 출력한다.",
+    "danger": "low",
+    "example": "cat readme.txt"
+  },
+  "clear": {
+    "description": "터미널 화면을 깨끗하게 지운다.",
+    "danger": "low",
+    "example": "clear"
+  },
+  "python": {
+    "description": "파이썬 파일을 실행한다.",
+    "danger": "medium",
+    "example": "python main.py"
+  },
+  "rm": {
+    "description": "파일을 삭제한다. 삭제된 파일은 휴지통으로 가지 않는다.",
+    "danger": "high",
+    "example": "rm test.txt"
+  },
+  "rm -r": {
+    "description": "폴더와 그 안의 모든 파일을 삭제한다.",
+    "danger": "high",
+    "example": "rm -r test_folder"
+  },
+  "rm -rf": {
+    "description": "확인 없이 파일이나 폴더를 강제로 삭제한다. 매우 위험하다.",
+    "danger": "high",
+    "example": "rm -rf test_folder"
+  },
+  "kill": {
+    "description": "실행 중인 프로세스를 종료한다.",
+    "danger": "high",
+    "example": "kill 1234"
+  }
+}
