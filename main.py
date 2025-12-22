@@ -13,205 +13,176 @@ root.geometry("700x600")
 # 최근입력기록저장용리스트
 recent_inputs = []
 
-# ===================== commands.json 로드 (추가) =====================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-COMMANDS_PATH = os.path.join(BASE_DIR, "data", "commands.json")
-
-with open(COMMANDS_PATH, "r", encoding="utf-8") as f:
-    commands_data = json.load(f)
-
-# ===================== 공용 함수 (추가) =====================
-def get_command_info(user_input):
-    if user_input in commands_data:
-        return commands_data[user_input]
-    base_cmd = user_input.split()[0]
-    return commands_data.get(base_cmd)
-
 # 둥근 모서리 사각형 함수
 def create_rounded_rect(canvas, x1, y1, x2, y2, radius=15, **kwargs):
-    points = [x1+radius, y1,
-              x1+radius, y1,
-              x2-radius, y1,
-              x2-radius, y1,
-              x2, y1,
-              x2, y1+radius,
-              x2, y1+radius,
-              x2, y2-radius,
-              x2, y2-radius,
-              x2, y2,
-              x2-radius, y2,
-              x2-radius, y2,
-              x1+radius, y2,
-              x1+radius, y2,
-              x1, y2,
-              x1, y2-radius,
-              x1, y2-radius,
-              x1, y1+radius,
-              x1, y1+radius,
-              x1, y1]
-    return canvas.create_polygon(points, **kwargs, smooth=True)
+    points = [
+        x1+radius, y1,
+        x2-radius, y1,
+        x2, y1,
+        x2, y1+radius,
+        x2, y2-radius,
+        x2, y2,
+        x2-radius, y2,
+        x1+radius, y2,
+        x1, y2,
+        x1, y2-radius,
+        x1, y1+radius,
+        x1, y1
+    ]
+    return canvas.create_polygon(points, smooth=True, **kwargs)
 
-# 폰트 크기 계산 함수
-def get_scaled_font_size(base_size):
-    scale = min(root.winfo_width() / 700, root.winfo_height() / 600)
-    return max(8, int(base_size * scale))
+# commands.json 로드
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(BASE_DIR, "data", "commands.json"), encoding="utf-8") as f:
+    commands = json.load(f)
 
-# 명령어입력창
+def get_command_info(cmd):
+    if cmd in commands:
+        return commands[cmd]
+    base = cmd.split()[0]
+    return commands.get(base)
+
+# 입력창 배경
 entry_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
 entry_canvas.place(relx=0.5, rely=0.08, anchor="center", relwidth=0.7, relheight=0.06)
 
 def redraw_entry_bg(event=None):
     entry_canvas.delete("all")
-    width = entry_canvas.winfo_width()
-    height = entry_canvas.winfo_height()
-    if width > 1 and height > 1:
-        radius = min(20, height // 2)
-        create_rounded_rect(entry_canvas, 4, 4, width, height, radius=radius, fill="#ffa0ab", outline="")
-        create_rounded_rect(entry_canvas, 2, 2, width-2, height-2, radius=radius, fill="white", outline="#ffb0bb", width=2)
+    w = entry_canvas.winfo_width()
+    h = entry_canvas.winfo_height()
+    if w > 1 and h > 1:
+        r = min(20, h // 2)
+        create_rounded_rect(entry_canvas, 4, 4, w, h, r, fill="#ffa0ab")
+        create_rounded_rect(entry_canvas, 2, 2, w-2, h-2, r, fill="white")
 
 entry_canvas.bind("<Configure>", redraw_entry_bg)
 
-entry = tk.Entry(root, bg="white", bd=0, relief="flat", highlightthickness=0, fg="#333333", insertbackground="#ff69b4")
+# 입력창 (까만 테두리 제거)
+entry = tk.Entry(
+    root,
+    bd=0,
+    bg="white",
+    fg="#333333",
+    relief="flat",
+    highlightthickness=0,
+    insertbackground="#ff69b4"
+)
 entry.place(relx=0.5, rely=0.08, anchor="center", relwidth=0.66, relheight=0.045)
 
-# 추천명령어박스
+# 명령어 추천 박스 (원래 네가 만든 연파랑 박스 유지)
 recommend_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
 recommend_canvas.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.7, relheight=0.13)
 
 def redraw_recommend_bg(event=None):
     recommend_canvas.delete("all")
-    width = recommend_canvas.winfo_width()
-    height = recommend_canvas.winfo_height()
-    if width > 1 and height > 1:
-        radius = min(40, height // 2)
-        create_rounded_rect(recommend_canvas, 4, 4, width, height, radius=radius, fill="#a0d5f0", outline="")
-        create_rounded_rect(recommend_canvas, 2, 2, width-2, height-2, radius=radius, fill="lightblue", outline="#80c0e0", width=3)
+    w = recommend_canvas.winfo_width()
+    h = recommend_canvas.winfo_height()
+    if w > 1 and h > 1:
+        r = min(40, h // 2)
+        create_rounded_rect(recommend_canvas, 4, 4, w, h, r, fill="#a0d5f0")
+        create_rounded_rect(recommend_canvas, 2, 2, w-2, h-2, r, fill="lightblue")
 
 recommend_canvas.bind("<Configure>", redraw_recommend_bg)
 
-recommend_text = tk.Text(root, bg="lightblue", bd=0, relief="flat", highlightthickness=0, wrap="word", fg="#2c5f7f", insertbackground="#5090b0")
+recommend_text = tk.Text(
+    root,
+    bd=0,
+    bg="lightblue",
+    fg="#2c5f7f",
+    relief="flat",
+    highlightthickness=0,
+    wrap="word"
+)
 recommend_text.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.64, relheight=0.09)
 
-# 설명/출력창
+# 출력 / 주석 배경 (둥근 모서리)
 text_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
 text_canvas.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.82, relheight=0.35)
 
 def redraw_text_bg(event=None):
     text_canvas.delete("all")
-    width = text_canvas.winfo_width()
-    height = text_canvas.winfo_height()
-    if width > 1 and height > 1:
-        create_rounded_rect(text_canvas, 4, 4, width, height, radius=20, fill="#f0f0f0", outline="")
-        create_rounded_rect(text_canvas, 2, 2, width-2, height-2, radius=20, fill="white", outline="#ffb0bb", width=2)
+    w = text_canvas.winfo_width()
+    h = text_canvas.winfo_height()
+    if w > 1 and h > 1:
+        create_rounded_rect(text_canvas, 2, 2, w-2, h-2, 20, fill="white")
 
 text_canvas.bind("<Configure>", redraw_text_bg)
 
-text = tk.Text(root, bg="white", bd=0, relief="flat", highlightthickness=0, wrap="word", fg="#333333", insertbackground="#ff69b4")
+# 출력창
+text = tk.Text(
+    root,
+    bd=0,
+    bg="white",
+    fg="#333333",
+    relief="flat",
+    highlightthickness=0,
+    wrap="word",
+    insertbackground="#ff69b4"
+)
 text.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.78, relheight=0.32)
 
-# 키티 이미지
+# 헬로키티 이미지 복구
 try:
-    img_top = Image.open("hello_kitty_top.png").resize((50, 50))
-    img_top_tk = ImageTk.PhotoImage(img_top)
-    img_bottom = Image.open("hello_kitty_bottom.png").resize((50, 50))
-    img_bottom_tk = ImageTk.PhotoImage(img_bottom)
-    
-    top_label = tk.Label(root, image=img_top_tk, bg="#ffc0cb")
-    top_label.image = img_top_tk
-    top_label.place(relx=0.02, rely=0.02)
-    
-    bottom_label = tk.Label(root, image=img_bottom_tk, bg="#ffc0cb")
-    bottom_label.image = img_bottom_tk
-    bottom_label.place(relx=0.98, rely=0.98, anchor="se")
+    img_top = ImageTk.PhotoImage(Image.open("hello_kitty_top.png").resize((50, 50)))
+    img_bottom = ImageTk.PhotoImage(Image.open("hello_kitty_bottom.png").resize((50, 50)))
+
+    tk.Label(root, image=img_top, bg="#ffc0cb").place(relx=0.02, rely=0.02)
+    tk.Label(root, image=img_bottom, bg="#ffc0cb").place(relx=0.98, rely=0.98, anchor="se")
 except:
-    print("이미지 파일을 찾을 수 없습니다.")
+    print("헬로키티 이미지 없음")
 
-# 버튼 클릭 함수
-def show_text():
-    user_input = entry.get().strip()
-    if not user_input:
-        return
-
-    text.insert(tk.END, f"> {user_input}\n")
-
-    info = get_command_info(user_input)
-
+# 자동 주석 표시
+def update_comment(event=None):
+    recommend_text.delete(1.0, tk.END)
+    cmd = entry.get().strip()
+    info = get_command_info(cmd)
     if info:
-        danger_icon = {"low": "🟢", "medium": "🟡", "high": "🔴"}[info["danger"]]
-        text.insert(
+        recommend_text.insert(
             tk.END,
-            f"설명: {info['description']}\n"
-            f"위험도: {danger_icon} {info['danger']}\n"
-            f"예시: {info['example']}\n\n"
+            f"📌 {info['description']}\n"
+            f"⚠️ 위험도: {info['danger']}\n"
+            f"💡 예시: {info['example']}"
         )
-        recommend_text.delete(1.0, tk.END)
-        recommend_text.insert(tk.END, info["example"])
-    else:
-        text.insert(tk.END, "⚠️ 등록되지 않은 명령어입니다.\n\n")
-        recommend_text.delete(1.0, tk.END)
 
-    recent_inputs.append(user_input)
+entry.bind("<KeyRelease>", update_comment)
 
-# ===================== 실제 실행 함수 (추가) =====================
-def execute_command():
-    user_input = entry.get().strip()
-    if not user_input:
+# 실행
+def execute():
+    cmd = entry.get().strip()
+    if not cmd:
         return
 
-    info = get_command_info(user_input)
+    info = get_command_info(cmd)
     if not info:
-        messagebox.showerror("실행 차단", "허용되지 않은 명령어입니다.")
+        messagebox.showerror("차단", "허용되지 않은 명령어입니다.")
         return
 
     if info["danger"] == "high":
-        if not messagebox.askyesno("위험 경고", "이 명령어는 위험합니다.\n정말 실행하시겠습니까?"):
+        if not messagebox.askyesno("경고", "위험한 명령어입니다.\n실행할까요?"):
             return
 
-    result = subprocess.run(user_input, shell=True, capture_output=True, text=True)
-    if result.stdout:
-        text.insert(tk.END, result.stdout + "\n")
-    if result.stderr:
-        text.insert(tk.END, result.stderr + "\n")
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    text.insert(tk.END, f"> {cmd}\n")
+    text.insert(tk.END, result.stdout or result.stderr)
+    text.insert(tk.END, "\n")
 
     entry.delete(0, tk.END)
 
-# Canvas 기반 버튼 생성
+entry.bind("<Return>", lambda e: execute())
+
+# 실행 버튼
 button_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
-button_canvas.place(relx=0.5, rely=0.78, anchor="center", width=150, height=50)
+button_canvas.place(relx=0.5, rely=0.8, anchor="center", width=150, height=50)
 
-def draw_button(canvas, hover=False):
-    canvas.delete("all")
+def draw_button(hover=False):
+    button_canvas.delete("all")
     color = "#ff69b4" if hover else "#ff85a1"
-    create_rounded_rect(canvas, 2, 2, 148, 48, radius=15, fill=color, outline="")
-    canvas.create_text(75, 25, text="✨ 실행 ✨", font=("Arial", 12, "bold"), fill="white")
+    create_rounded_rect(button_canvas, 2, 2, 148, 48, 15, fill=color)
+    button_canvas.create_text(75, 25, text="✨ 실행 ✨", fill="white", font=("Arial", 12, "bold"))
 
-draw_button(button_canvas)
-
-def on_enter(e):
-    draw_button(button_canvas, hover=True)
-
-def on_leave(e):
-    draw_button(button_canvas, hover=False)
-
-def on_click(event):
-    show_text()
-    execute_command()
-
-button_canvas.bind("<Enter>", on_enter)
-button_canvas.bind("<Leave>", on_leave)
-button_canvas.bind("<Button-1>", on_click)
-
-# 폰트 크기 업데이트
-def update_fonts(event=None):
-    entry_font_size = get_scaled_font_size(11)
-    recommend_font_size = get_scaled_font_size(10)
-    text_font_size = get_scaled_font_size(10)
-    
-    entry.config(font=("Arial", entry_font_size))
-    recommend_text.config(font=("Arial", recommend_font_size))
-    text.config(font=("Arial", text_font_size))
-
-root.bind("<Configure>", update_fonts)
-update_fonts()
+draw_button()
+button_canvas.bind("<Enter>", lambda e: draw_button(True))
+button_canvas.bind("<Leave>", lambda e: draw_button(False))
+button_canvas.bind("<Button-1>", lambda e: execute())
 
 root.mainloop()
