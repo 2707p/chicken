@@ -174,5 +174,4 @@ def execute():
 entry.bind("<Return>", lambda e: execute())
 
 
-
 root.mainloop()
