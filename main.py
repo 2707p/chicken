@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 
 root = tk.Tk()
 root.configure(bg="#ffc0cb")
-root.title("💕Terminal Helper💕")
+root.title("Terminal Helper")
 root.geometry("700x600")
 
 # 명령어입력창
@@ -26,7 +26,7 @@ recommend_canvas.create_oval(80, 40, 420, 75, fill="lightblue", outline="skyblue
 
 # Text 위젯 추가 (이 부분이 빠져있었어요!)
 recommend_text = tk.Text(root, width=58, height=3, bg="lightblue", bd=0, 
-                         font=("Arial", 10), relief="flat")
+                         font=("Arial", 10), relief="flat", highlightthickness=0)
 recommend_canvas.create_window(250, 45, window=recommend_text)
 
 # 설명/출력창
