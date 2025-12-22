@@ -22,7 +22,12 @@ entry.pack(padx=10, pady=10)
 
 # 버튼을 만든다
 # text="실행" → 버튼에 적힐 글자
-button = tk.Button(root, text="실행")
+def show_text() :
+    user_input = entry.get()
+    text.insert(tk.END, user_input + "\n")
+
+button = tk.Button(root, text="실행", command=show_text)
+button.pack(pady=5)
 
 # 버튼을 화면에 배치
 button.pack(pady=5)
