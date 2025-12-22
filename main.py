@@ -1,5 +1,9 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+import json
+import os
+import subprocess
+from tkinter import messagebox
 
 root = tk.Tk()
 root.configure(bg="#ffc0cb")
@@ -8,6 +12,20 @@ root.geometry("700x600")
 
 # 최근입력기록저장용리스트
 recent_inputs = []
+
+# ===================== commands.json 로드 (추가) =====================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+COMMANDS_PATH = os.path.join(BASE_DIR, "data", "commands.json")
+
+with open(COMMANDS_PATH, "r", encoding="utf-8") as f:
+    commands_data = json.load(f)
+
+# ===================== 공용 함수 (추가) =====================
+def get_command_info(user_input):
+    if user_input in commands_data:
+        return commands_data[user_input]
+    base_cmd = user_input.split()[0]
+    return commands_data.get(base_cmd)
 
 # 둥근 모서리 사각형 함수
 def create_rounded_rect(canvas, x1, y1, x2, y2, radius=15, **kwargs):
@@ -110,16 +128,51 @@ except:
 
 # 버튼 클릭 함수
 def show_text():
-    user_input = entry.get()
-    if not user_input.strip():
+    user_input = entry.get().strip()
+    if not user_input:
         return
-    
-    text.insert(tk.END, f"{user_input} #설명 : 여기에 명령어 설명 표시\n")
+
+    text.insert(tk.END, f"> {user_input}\n")
+
+    info = get_command_info(user_input)
+
+    if info:
+        danger_icon = {"low": "🟢", "medium": "🟡", "high": "🔴"}[info["danger"]]
+        text.insert(
+            tk.END,
+            f"설명: {info['description']}\n"
+            f"위험도: {danger_icon} {info['danger']}\n"
+            f"예시: {info['example']}\n\n"
+        )
+        recommend_text.delete(1.0, tk.END)
+        recommend_text.insert(tk.END, info["example"])
+    else:
+        text.insert(tk.END, "⚠️ 등록되지 않은 명령어입니다.\n\n")
+        recommend_text.delete(1.0, tk.END)
+
     recent_inputs.append(user_input)
-    
-    recommend_text.delete(1.0, tk.END)
-    recommend_text.insert(tk.END, f"{user_input}_추천1\n{user_input}_추천2\n")
-    
+
+# ===================== 실제 실행 함수 (추가) =====================
+def execute_command():
+    user_input = entry.get().strip()
+    if not user_input:
+        return
+
+    info = get_command_info(user_input)
+    if not info:
+        messagebox.showerror("실행 차단", "허용되지 않은 명령어입니다.")
+        return
+
+    if info["danger"] == "high":
+        if not messagebox.askyesno("위험 경고", "이 명령어는 위험합니다.\n정말 실행하시겠습니까?"):
+            return
+
+    result = subprocess.run(user_input, shell=True, capture_output=True, text=True)
+    if result.stdout:
+        text.insert(tk.END, result.stdout + "\n")
+    if result.stderr:
+        text.insert(tk.END, result.stderr + "\n")
+
     entry.delete(0, tk.END)
 
 # Canvas 기반 버튼 생성
@@ -142,6 +195,7 @@ def on_leave(e):
 
 def on_click(event):
     show_text()
+    execute_command()
 
 button_canvas.bind("<Enter>", on_enter)
 button_canvas.bind("<Leave>", on_leave)
@@ -152,12 +206,10 @@ def update_fonts(event=None):
     entry_font_size = get_scaled_font_size(11)
     recommend_font_size = get_scaled_font_size(10)
     text_font_size = get_scaled_font_size(10)
-    button_font_size = get_scaled_font_size(12)
     
     entry.config(font=("Arial", entry_font_size))
     recommend_text.config(font=("Arial", recommend_font_size))
     text.config(font=("Arial", text_font_size))
-    # Canvas 버튼은 텍스트 그리기 때문에 따로 font update 필요 없음
 
 root.bind("<Configure>", update_fonts)
 update_fonts()
