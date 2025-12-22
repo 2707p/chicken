@@ -1,0 +1,88 @@
+# 터미널 명령어 가이드
+
+COMMAND_LIST = {
+    "1": {
+        "name": "ls",
+        "description": "현재 디렉토리의 파일과 폴더 목록을 보여줍니다.",
+        "detail": ["ls", "ls -a : 숨김 파일 포함", "ls -l : 자세히 보기"],
+        "risk": "낮음"
+    },
+    "2": {
+        "name": "cd",
+        "description": "다른 디렉토리로 이동합니다.",
+        "detail": ["cd 폴더명", "cd .. : 상위 폴더"],
+        "risk": "낮음"
+    },
+    "3": {
+        "name": "pwd",
+        "description": "현재 작업 중인 디렉토리의 경로를 출력합니다.",
+        "detail": ["pwd"],
+        "risk": "낮음"
+    },
+    "4": {
+        "name": "mkdir",
+        "description": "새로운 디렉토리를 생성합니다.",
+        "detail": ["mkdir 폴더명"],
+        "risk": "낮음"
+    },
+    "5": {
+        "name": "touch",
+        "description": "빈 파일을 생성합니다.",
+        "detail": ["touch 파일명"],
+        "risk": "낮음"
+    },
+    "6": {
+        "name": "cp",
+        "description": "파일을 복사합니다.",
+        "detail": ["cp 원본 대상"],
+        "risk": "낮음"
+    },
+    "7": {
+        "name": "mv",
+        "description": "파일을 이동하거나 이름을 변경합니다.",
+        "detail": ["mv 기존이름 새이름"],
+        "risk": "낮음"
+    },
+    "8": {
+        "name": "rm",
+        "description": "파일을 삭제합니다.",
+        "detail": ["rm 파일명", "⚠ 삭제된 파일은 복구가 어렵습니다"],
+        "risk": "중간"
+    },
+    "9": {
+        "name": "cat",
+        "description": "파일 내용을 한 번에 출력합니다.",
+        "detail": ["cat 파일명"],
+        "risk": "낮음"
+    },
+    "10": {
+        "name": "less",
+        "description": "파일 내용을 페이지 단위로 보여줍니다.",
+        "detail": ["less 파일명", "q : 종료"],
+        "risk": "낮음"
+    },
+    "11": {
+        "name": "grep",
+        "description": "파일에서 특정 문자열을 검색합니다.",
+        "detail": ["grep 단어 파일명"],
+        "risk": "중간"
+    },
+    "12": {
+        "name": "find",
+        "description": "파일이나 폴더를 검색합니다.",
+        "detail": ["find . -name 파일명"],
+        "risk": "중간"
+    },
+    "13": {
+        "name": "sudo",
+        "description": "관리자 권한으로 명령을 실행합니다.",
+        "detail": ["⚠ 시스템에 큰 영향을 줄 수 있음"],
+        "risk": "높음"
+    },
+    "14": {
+        "name": "rm -rf",
+        "description": "강제로 파일/폴더를 전부 삭제합니다.",
+        "detail": ["⚠ 매우 위험, 되돌릴 수 없음"],
+        "risk": "높음"
+    }
+}
