@@ -24,7 +24,7 @@ class DashboardGUI:
             
         self.bg_color = "#ffc0cb"
         self.card_color = "#fff0f5"
-        self.title_color = "#ff85a1"
+        self.title_color = "#ff69b4"
         self.text_color = "#333333"
         
         self.setup_window()
@@ -36,14 +36,14 @@ class DashboardGUI:
     def setup_window(self):
         """윈도우 기본 설정"""
         self.root.title("📊 Terminal Helper Dashboard")
-        self.root.geometry("700x500")
+        self.root.geometry("700x600")
         self.root.configure(bg=self.bg_color)
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
         
         # 화면 중앙에 배치
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() // 2) - (700 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (500 // 2)
+        y = (self.root.winfo_screenheight() // 2) - (600 // 2)
         self.root.geometry(f"+{x}+{y}")
     
     def create_widgets(self):
@@ -55,18 +55,39 @@ class DashboardGUI:
         # 헤더
         self.create_header(main_frame)
         
-        # 정보 카드 컨테이너
-        cards_frame = tk.Frame(main_frame, bg=self.bg_color)
-        cards_frame.pack(fill="both", expand=True, pady=20)
+        # 스크롤 가능한 프레임 생성
+        canvas_container = tk.Frame(main_frame, bg=self.bg_color)
+        canvas_container.pack(fill="both", expand=True, pady=(20, 0))
+        
+        # Canvas 생성
+        canvas = tk.Canvas(canvas_container, bg=self.bg_color, highlightthickness=0)
+        scrollbar = tk.Scrollbar(canvas_container, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=self.bg_color)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # 마우스 휠 스크롤 지원
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
         
         # 시스템 정보 수집
         info = self.get_system_info()
         
-        # 정보 카드들 생성
-        self.create_info_card(cards_frame, "💻 운영체제", info['os'], 0)
-        self.create_info_card(cards_frame, "🐍 Python 버전", info['python'], 1)
-        self.create_info_card(cards_frame, "📁 현재 디렉토리", info['directory'], 2)
-        self.create_info_card(cards_frame, "🕐 시스템 시간", info['time'], 3)
+        # 정보 카드들 생성 (스크롤 가능한 프레임에)
+        self.create_info_card(scrollable_frame, "💻 운영체제", info['os'], 0)
+        self.create_info_card(scrollable_frame, "🐍 Python 버전", info['python'], 1)
+        self.create_info_card(scrollable_frame, "📁 현재 디렉토리", info['directory'], 2)
+        self.create_info_card(scrollable_frame, "🕐 시스템 시간", info['time'], 3)
         
         # 하단 버전 정보
         self.create_footer(main_frame)
@@ -96,31 +117,60 @@ class DashboardGUI:
     
     def create_info_card(self, parent, label, value, row):
         """정보 카드 생성"""
-        card = tk.Frame(
-            parent,
-            bg=self.card_color,
-            relief="flat",
-            borderwidth=0
-        )
-        card.pack(fill="x", pady=8)
+        # 카드 프레임
+        card_frame = tk.Frame(parent, bg=self.bg_color)
+        card_frame.pack(fill="x", pady=8)
         
-        # 그림자 효과를 위한 테두리
-        card.config(highlightbackground="#ffb6c1", highlightthickness=2)
+        # Canvas로 둥근 모서리 구현
+        canvas = tk.Canvas(
+            card_frame,
+            bg=self.bg_color,
+            highlightthickness=0,
+            height=100
+        )
+        canvas.pack(fill="x")
+        
+        # 둥근 모서리 사각형 그리기
+        def draw_rounded_rect(event=None):
+            canvas.delete("all")
+            w = canvas.winfo_width()
+            h = canvas.winfo_height()
+            r = 20  # 모서리 반경
+            
+            # 외부 테두리 (그림자 효과)
+            canvas.create_arc(2, 2, 2+r*2, 2+r*2, start=90, extent=90, fill="#ffb6c1", outline="")
+            canvas.create_arc(w-2-r*2, 2, w-2, 2+r*2, start=0, extent=90, fill="#ffb6c1", outline="")
+            canvas.create_arc(2, h-2-r*2, 2+r*2, h-2, start=180, extent=90, fill="#ffb6c1", outline="")
+            canvas.create_arc(w-2-r*2, h-2-r*2, w-2, h-2, start=270, extent=90, fill="#ffb6c1", outline="")
+            canvas.create_rectangle(2+r, 2, w-2-r, h-2, fill="#ffb6c1", outline="")
+            canvas.create_rectangle(2, 2+r, 2+r, h-2-r, fill="#ffb6c1", outline="")
+            canvas.create_rectangle(w-2-r, 2+r, w-2, h-2-r, fill="#ffb6c1", outline="")
+            
+            # 내부 카드
+            canvas.create_arc(4, 4, 4+r*2, 4+r*2, start=90, extent=90, fill=self.card_color, outline="")
+            canvas.create_arc(w-4-r*2, 4, w-4, 4+r*2, start=0, extent=90, fill=self.card_color, outline="")
+            canvas.create_arc(4, h-4-r*2, 4+r*2, h-4, start=180, extent=90, fill=self.card_color, outline="")
+            canvas.create_arc(w-4-r*2, h-4-r*2, w-4, h-4, start=270, extent=90, fill=self.card_color, outline="")
+            canvas.create_rectangle(4+r, 4, w-4-r, h-4, fill=self.card_color, outline="")
+            canvas.create_rectangle(4, 4+r, 4+r, h-4-r, fill=self.card_color, outline="")
+            canvas.create_rectangle(w-4-r, 4+r, w-4, h-4-r, fill=self.card_color, outline="")
+        
+        canvas.bind("<Configure>", draw_rounded_rect)
         
         # 라벨
         label_widget = tk.Label(
-            card,
+            canvas,
             text=label,
             font=("맑은 고딕", 12, "bold"),
             bg=self.card_color,
             fg=self.title_color,
             anchor="w"
         )
-        label_widget.pack(fill="x", padx=20, pady=(15, 5))
+        canvas.create_window(20, 25, anchor="w", window=label_widget)
         
         # 값
         value_widget = tk.Label(
-            card,
+            canvas,
             text=value,
             font=("맑은 고딕", 11),
             bg=self.card_color,
@@ -128,7 +178,7 @@ class DashboardGUI:
             anchor="w",
             wraplength=600
         )
-        value_widget.pack(fill="x", padx=20, pady=(0, 15))
+        canvas.create_window(20, 60, anchor="w", window=value_widget)
     
     def create_footer(self, parent):
         """푸터 생성"""
