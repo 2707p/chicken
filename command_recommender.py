@@ -25,7 +25,7 @@ class CommandRecommenderUI(tk.Toplevel):
         # 자연어 입력 라벨
         tk.Label(
             self,
-            text="🗣 자연어 입력",
+            text="🗣 사용하고 싶은 명령어를 설명하세요.",
             bg=BG_COLOR,
             fg=TEXT_COLOR,
             font=("Apple SD Gothic Neo", 13, "bold")
@@ -58,7 +58,7 @@ class CommandRecommenderUI(tk.Toplevel):
         # 출력 라벨
         tk.Label(
             self,
-            text="📋 추천 결과",
+            text="📋 추천 명령어",
             bg=BG_COLOR,
             fg=TEXT_COLOR,
             font=("Apple SD Gothic Neo", 13, "bold")
@@ -89,7 +89,7 @@ class CommandRecommenderUI(tk.Toplevel):
 
         self.output_text.insert(
             "end",
-            "👉 자연어를 입력하고\n👉 Enter를 누르세요"
+            "👉 설명을 입력하고\n👉 Enter를 누르세요"
         )
 
     # 둥근 사각형
