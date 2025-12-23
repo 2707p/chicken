@@ -1,61 +1,177 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-
+import json
+import os
+import subprocess
+from tkinter import messagebox
+from command_recommender import CommandRecommenderUI
 
 root = tk.Tk()
 root.configure(bg="#ffc0cb")
-root.title("Terminal Helper")
+root.title("💕Terminal Helper💕")
 root.geometry("700x600")
 
-#명령어입력창
-entry = tk.Entry(root, width=50, bg="white")
-entry.pack(padx=10, pady=10)
+CommandRecommenderUI(root)
 
-#추천명령어박스
-recommend_canvas = tk.Canvas(root, width=500, height=80,bg="white", highlightthicknes=0)
-recommend_canvas.pack(padx=10, pady=5)
-recommend_canvas.create_oval(5,5,495,75,fill="white")
+# 최근입력기록저장용리스트
+recent_inputs = []
 
-recommend_text = tk.Text(root, width=58, height=3, bg="white", bd=0)
-recommend_canvas.create_window(250, 40, window=recommend_text)  #타원 중앙에 Text 배치
+# 둥근 모서리 사각형 함수
+def create_rounded_rect(canvas, x1, y1, x2, y2, radius=15, **kwargs):
+    points = [
+        x1+radius, y1,
+        x2-radius, y1,
+        x2, y1,
+        x2, y1+radius,
+        x2, y2-radius,
+        x2, y2,
+        x2-radius, y2,
+        x1+radius, y2,
+        x1, y2,
+        x1, y2-radius,
+        x1, y1+radius,
+        x1, y1
+    ]
+    return canvas.create_polygon(points, smooth=True, **kwargs)
 
+# commands.json 로드
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(BASE_DIR, "data", "commands.json"), encoding="utf-8") as f:
+    commands = json.load(f)
 
-#설명/출력창
-text=tk.Text(root,width=60,height=10, bg="white")
-text.pack(padx=10,pady=10)
+def get_command_info(cmd):
+    if cmd in commands:
+        return commands[cmd]
+    base = cmd.split()[0]
+    return commands.get(base)
 
-#최근입력기록저장용리스트
-recent_inputs=[]
+# 입력창 배경
+entry_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
+entry_canvas.place(relx=0.5, rely=0.08, anchor="center", relwidth=0.7, relheight=0.06)
 
-#키티 ㅎㅎ (이미지경로는내가따로설정ㅋㅋ)
-img_top = Image.open("hello_kitty_top.png").resize((50,50))
-img_top_tk = ImageTk.PhotoImage(img_top)
-img_bottom = Image.open("hello_kitty_bottom.png").resize((50,50))
-img_bottom_tk = ImageTk.PhotoImage(img_bottom)
+def redraw_entry_bg(event=None):
+    entry_canvas.delete("all")
+    w = entry_canvas.winfo_width()
+    h = entry_canvas.winfo_height()
+    if w > 1 and h > 1:
+        r = min(20, h // 2)
+        create_rounded_rect(entry_canvas, 4, 4, w, h, r, fill="#ffa0ab")
+        create_rounded_rect(entry_canvas, 2, 2, w-2, h-2, r, fill="white")
 
-top_label = tk.Label(root, image=img_top_tk, bg="white")
-top_label.place(x=10, y=10)  # 좌측 상단
+entry_canvas.bind("<Configure>", redraw_entry_bg)
 
-bottom_label = tk.Label(root, image=img_bottom_tk, bg="white")
-bottom_label.place(relx=1.0, rely=1.0, anchor="se")  # 우측 하단
+# 입력창 (까만 테두리 제거)
+entry = tk.Entry(
+    root,
+    bd=0,
+    bg="white",
+    fg="#333333",
+    relief="flat",
+    highlightthickness=0,
+    insertbackground="#ff69b4"
+)
+entry.place(relx=0.5, rely=0.08, anchor="center", relwidth=0.66, relheight=0.045)
 
-#버튼클릭함수
-def show_text() :
-    user_input = entry.get()
-    if not user_input.strip():
-        return
-    text.insert(tk.END, f"{user_input} #설명 : 여기에 명령어 설명 표시\n")
-    recent_inputs.append(user_input)
-    #추천명령어표시
+# 명령어 추천 박스 (원래 네가 만든 연파랑 박스 유지)
+recommend_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
+recommend_canvas.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.7, relheight=0.13)
+
+def redraw_recommend_bg(event=None):
+    recommend_canvas.delete("all")
+    w = recommend_canvas.winfo_width()
+    h = recommend_canvas.winfo_height()
+    if w > 1 and h > 1:
+        r = min(40, h // 2)
+        create_rounded_rect(recommend_canvas, 4, 4, w, h, r, fill="#a0d5f0")
+        create_rounded_rect(recommend_canvas, 2, 2, w-2, h-2, r, fill="lightblue")
+
+recommend_canvas.bind("<Configure>", redraw_recommend_bg)
+
+recommend_text = tk.Text(
+    root,
+    bd=0,
+    bg="lightblue",
+    fg="#2c5f7f",
+    relief="flat",
+    highlightthickness=0,
+    wrap="word"
+)
+recommend_text.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.64, relheight=0.09)
+
+# 출력 / 주석 배경 (둥근 모서리)
+text_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
+text_canvas.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.82, relheight=0.35)
+
+def redraw_text_bg(event=None):
+    text_canvas.delete("all")
+    w = text_canvas.winfo_width()
+    h = text_canvas.winfo_height()
+    if w > 1 and h > 1:
+        create_rounded_rect(text_canvas, 2, 2, w-2, h-2, 20, fill="white")
+
+text_canvas.bind("<Configure>", redraw_text_bg)
+
+# 출력창
+text = tk.Text(
+    root,
+    bd=0,
+    bg="white",
+    fg="#333333",
+    relief="flat",
+    highlightthickness=0,
+    wrap="word",
+    insertbackground="#ff69b4"
+)
+text.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.78, relheight=0.32)
+
+# 헬로키티 이미지 복구
+try:
+    img_top = ImageTk.PhotoImage(Image.open("hello_kitty_top.png").resize((50, 50)))
+    img_bottom = ImageTk.PhotoImage(Image.open("hello_kitty_bottom.png").resize((50, 50)))
+
+    tk.Label(root, image=img_top, bg="#ffc0cb").place(relx=0.02, rely=0.02)
+    tk.Label(root, image=img_bottom, bg="#ffc0cb").place(relx=0.98, rely=0.98, anchor="se")
+except:
+    print("헬로키티 이미지 없음")
+
+# 자동 주석 표시
+def update_comment(event=None):
     recommend_text.delete(1.0, tk.END)
-    recommend_text.insert(tk.END, f"{user_input}_추천1\n{user_input}_추천2\n")
+    cmd = entry.get().strip()
+    info = get_command_info(cmd)
+    if info:
+        recommend_text.insert(
+            tk.END,
+            f"📌 {info['description']}\n"
+            f"⚠️ 위험도: {info['danger']}\n"
+            f"💡 예시: {info['example']}"
+        )
+
+entry.bind("<KeyRelease>", update_comment)
+
+# 실행
+def execute():
+    cmd = entry.get().strip()
+    if not cmd:
+        return
+
+    info = get_command_info(cmd)
+    if not info:
+        messagebox.showerror("차단", "허용되지 않은 명령어입니다.")
+        return
+
+    if info["danger"] == "high":
+        if not messagebox.askyesno("경고", "위험한 명령어입니다.\n실행할까요?"):
+            return
+
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    text.insert(tk.END, f"> {cmd}\n")
+    text.insert(tk.END, result.stdout or result.stderr)
+    text.insert(tk.END, "\n")
 
     entry.delete(0, tk.END)
 
-#실행버튼 
-button = tk.Button(root, text="실행", command=show_text)
-button.pack(pady=5)
+entry.bind("<Return>", lambda e: execute())
 
 
 root.mainloop()
-
