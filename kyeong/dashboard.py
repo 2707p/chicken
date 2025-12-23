@@ -119,14 +119,14 @@ class DashboardGUI:
         """정보 카드 생성"""
         # 카드 프레임
         card_frame = tk.Frame(parent, bg=self.bg_color)
-        card_frame.pack(fill="x", pady=8)
+        card_frame.pack(fill="x", pady=8, padx=10)
         
         # Canvas로 둥근 모서리 구현
         canvas = tk.Canvas(
             card_frame,
             bg=self.bg_color,
             highlightthickness=0,
-            height=100
+            height=110
         )
         canvas.pack(fill="x")
         
@@ -134,8 +134,11 @@ class DashboardGUI:
         def draw_rounded_rect(event=None):
             canvas.delete("all")
             w = canvas.winfo_width()
-            h = canvas.winfo_height()
+            h = 110
             r = 20  # 모서리 반경
+            
+            if w < 10:
+                return
             
             # 외부 테두리 (그림자 효과)
             canvas.create_arc(2, 2, 2+r*2, 2+r*2, start=90, extent=90, fill="#ffb6c1", outline="")
@@ -156,29 +159,36 @@ class DashboardGUI:
             canvas.create_rectangle(w-4-r, 4+r, w-4, h-4-r, fill=self.card_color, outline="")
         
         canvas.bind("<Configure>", draw_rounded_rect)
+        canvas.update()
+        draw_rounded_rect()
+        
+        # 내용 프레임 (Canvas 위에)
+        content_frame = tk.Frame(card_frame, bg=self.card_color)
+        content_frame.place(x=24, y=18, relwidth=0.9, height=74)
         
         # 라벨
         label_widget = tk.Label(
-            canvas,
+            content_frame,
             text=label,
             font=("맑은 고딕", 12, "bold"),
             bg=self.card_color,
             fg=self.title_color,
             anchor="w"
         )
-        canvas.create_window(20, 25, anchor="w", window=label_widget)
+        label_widget.pack(fill="x", pady=(5, 2))
         
         # 값
         value_widget = tk.Label(
-            canvas,
+            content_frame,
             text=value,
             font=("맑은 고딕", 11),
             bg=self.card_color,
             fg=self.text_color,
             anchor="w",
-            wraplength=600
+            wraplength=600,
+            justify="left"
         )
-        canvas.create_window(20, 60, anchor="w", window=value_widget)
+        value_widget.pack(fill="x", pady=(2, 5))
     
     def create_footer(self, parent):
         """푸터 생성"""
