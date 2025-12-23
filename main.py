@@ -3,6 +3,8 @@ from PIL import Image, ImageTk
 import json
 import os
 import subprocess
+import sys
+from pathlib import Path
 from tkinter import messagebox
 from command_recommender import CommandRecommenderUI
 
@@ -44,6 +46,63 @@ def get_command_info(cmd):
         return commands[cmd]
     base = cmd.split()[0]
     return commands.get(base)
+
+# ==================== 대시보드 함수 추가 ====================
+def open_dashboard():
+    """대시보드 GUI를 여는 함수"""
+    try:
+        # kyeong/dashboard.py의 DashboardGUI 클래스 import
+        current_dir = Path(__file__).parent
+        kyeong_path = current_dir / "kyeong"
+        
+        # kyeong 폴더를 sys.path에 추가
+        if str(kyeong_path) not in sys.path:
+            sys.path.insert(0, str(kyeong_path))
+        
+        # dashboard 모듈 import
+        import dashboard
+        
+        # GUI 대시보드 실행
+        dashboard.DashboardGUI(root)
+        
+    except Exception as e:
+        # 에러 발생 시 메시지박스 표시
+        messagebox.showerror("오류", f"대시보드를 열 수 없습니다.\n\n{str(e)}")
+
+def create_dashboard_button(parent):
+    """대시보드 버튼을 생성하는 함수"""
+    normal_color = "#ff85a1"
+    hover_color = "#ff69b4"
+    
+    button = tk.Button(
+        parent,
+        text="💻 현재 상태 확인",
+        font=("맑은 고딕", 11, "bold"),
+        bg=normal_color,
+        fg="white",
+        activebackground=hover_color,
+        activeforeground="white",
+        relief="flat",
+        cursor="hand2",
+        padx=20,
+        pady=10,
+        command=open_dashboard,
+        borderwidth=0,
+        highlightthickness=0
+    )
+    
+    # 호버 효과
+    def on_hover(e):
+        button.config(bg=hover_color)
+    
+    def on_leave(e):
+        button.config(bg=normal_color)
+    
+    button.bind("<Enter>", on_hover)
+    button.bind("<Leave>", on_leave)
+    
+    return button
+# ==================== 대시보드 함수 끝 ====================
 
 # 입력창 배경
 entry_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
@@ -124,6 +183,11 @@ text = tk.Text(
 )
 text.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.78, relheight=0.32)
 
+# ==================== 대시보드 버튼 추가 ====================
+dashboard_btn = create_dashboard_button(root)
+dashboard_btn.place(relx=0.5, rely=0.75, anchor="center")
+# ==================== 대시보드 버튼 끝 ====================
+
 # 헬로키티 이미지 복구
 try:
     img_top = ImageTk.PhotoImage(Image.open("hello_kitty_top.png").resize((50, 50)))
@@ -173,5 +237,5 @@ def execute():
 
 entry.bind("<Return>", lambda e: execute())
 
-
+#안뇽
 root.mainloop()
