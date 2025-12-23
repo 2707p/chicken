@@ -49,7 +49,7 @@ def get_command_info(cmd):
 
 # ==================== 대시보드 함수 추가 ====================
 def open_dashboard():
-    """대시보드 GUI를 여는 함수"""
+    #대시보드 GUI를 여는 함수"""
     try:
         # kyeong/dashboard.py의 DashboardGUI 클래스 import
         current_dir = Path(__file__).parent
@@ -70,7 +70,7 @@ def open_dashboard():
         messagebox.showerror("오류", f"대시보드를 열 수 없습니다.\n\n{str(e)}")
 
 def create_dashboard_button(parent):
-    """대시보드 버튼을 생성하는 함수"""
+    #대시보드 함수
     normal_color = "#ff85a1"
     hover_color = "#ff69b4"
     
@@ -120,6 +120,7 @@ def redraw_entry_bg(event=None):
 entry_canvas.bind("<Configure>", redraw_entry_bg)
 
 # 입력창 (까만 테두리 제거)
+
 entry = tk.Entry(
     root,
     bd=0,
@@ -131,7 +132,27 @@ entry = tk.Entry(
 )
 entry.place(relx=0.5, rely=0.08, anchor="center", relwidth=0.66, relheight=0.045)
 
-# 명령어 추천 박스 (원래 네가 만든 연파랑 박스 유지)
+
+def add_entry_placeholder(entry, placeholder):
+    entry.insert(0, placeholder)
+    entry.config(fg="gray")
+
+    def on_focus_in(event):
+        if entry.get() == placeholder:
+            entry.delete(0, tk.END)
+            entry.config(fg="#333333")  # 원래 글자색
+
+    def on_focus_out(event):
+        if entry.get() == "":
+            entry.insert(0, placeholder)
+            entry.config(fg="gray")
+
+    entry.bind("<FocusIn>", on_focus_in)
+    entry.bind("<FocusOut>", on_focus_out)
+
+add_entry_placeholder(entry, "명령어를 입력하세요. 명령어는 실제로 작동합니다.")
+
+# 주석나오느대
 recommend_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
 recommend_canvas.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.7, relheight=0.13)
 
@@ -156,6 +177,26 @@ recommend_text = tk.Text(
     wrap="word"
 )
 recommend_text.place(relx=0.5, rely=0.23, anchor="center", relwidth=0.64, relheight=0.09)
+
+def add_text_placeholder(text_widget, placeholder):
+    text_widget.insert(1.0, placeholder)
+    text_widget.config(fg="gray")
+
+    def on_focus_in(event):
+        if text_widget.get(1.0, tk.END).strip() == placeholder:
+            text_widget.delete(1.0, tk.END)
+            text_widget.config(fg="#2c5f7f")  # 원래 글자색
+
+    def on_focus_out(event):
+        if text_widget.get(1.0, tk.END).strip() == "":
+            text_widget.insert(1.0, placeholder)
+            text_widget.config(fg="gray")
+
+    text_widget.bind("<FocusIn>", on_focus_in)
+    text_widget.bind("<FocusOut>", on_focus_out)
+
+add_text_placeholder(recommend_text, "명령어 입력 후 실시간으로 출력되는 설명을 확인하세요.")
+
 
 # 출력 / 주석 배경 (둥근 모서리)
 text_canvas = tk.Canvas(root, bg="#ffc0cb", highlightthickness=0)
@@ -182,6 +223,9 @@ text = tk.Text(
     insertbackground="#ff69b4"
 )
 text.place(relx=0.5, rely=0.52, anchor="center", relwidth=0.78, relheight=0.32)
+
+text.insert(tk.END, "여기는 출력창입니다.\n")
+
 
 # ==================== 대시보드 버튼 추가 ====================
 dashboard_btn = create_dashboard_button(root)
