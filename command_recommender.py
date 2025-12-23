@@ -156,33 +156,56 @@ COMMANDS = {
 def nlp_to_command(user_input: str) -> str:
     text = user_input.lower()
 
-    if "강제로" in text:
+    # 1순위: 삭제 관련 (가장 구체적)
+    if "강제로" in text and "삭제" in text:
         return "rm -rf"
     if "폴더" in text and "삭제" in text:
         return "rm -r"
-    if "삭제" in text or "지워" in text:
+    if "삭제" in text or "지워" in text or "제거" in text:
         return "rm"
 
-    if "자세히" in text or "상세" in text:
-        return "ls -l"
-
-    if "목록" in text or "파일" in text or "폴더" in text:
-        return "ls"
-    if "위치" in text or "어디" in text or "현재" in text:
-        return "pwd"
-    if "이동" in text or "들어가" in text:
-        return "cd"
-    if "만들" in text:
+    # 2순위: 생성/만들기 관련
+    if "만들" in text and ("폴더" in text or "디렉토리" in text):
         return "mkdir"
-    if "복사" in text:
+    if "만들" in text and "파일" in text:
+        return "touch"
+    if "생성" in text and ("폴더" in text or "디렉토리" in text):
+        return "mkdir"
+    if "생성" in text and "파일" in text:
+        return "touch"
+    if "만들" in text or "생성" in text:
+        return "mkdir"
+
+    # 3순위: 파일 조작
+    if "복사" in text or "copy" in text:
         return "cp"
-    if "이름" in text or "변경" in text:
+    if ("이름" in text and "변경" in text) or "이동" in text and "파일" in text:
         return "mv"
-    if "내용" in text or "보기" in text:
+    if "내용" in text or ("보여" in text and "파일" in text):
         return "cat"
-    if "화면" in text or "정리" in text:
+
+    # 4순위: 이동/탐색
+    if "이동" in text or "들어가" in text or "디렉토리 변경" in text:
+        return "cd"
+    if "위치" in text or "어디" in text or "현재 경로" in text:
+        return "pwd"
+
+    # 5순위: ls 관련 (자세히가 먼저)
+    if "자세히" in text or "상세" in text or "detailed" in text:
+        return "ls -l"
+    if "목록" in text or "리스트" in text or "보여" in text:
+        return "ls"
+    
+    # 6순위: 기타
+    if "화면" in text or "정리" in text or "clear" in text:
         return "clear"
-    if "실행" in text:
+    if "실행" in text or "파이썬" in text:
         return "python"
+    if "종료" in text or "kill" in text:
+        return "kill"
+
+    # 마지막: 파일/폴더만 단독으로 언급된 경우
+    if "파일" in text or "폴더" in text:
+        return "ls"
 
     return "UNKNOWN"
