@@ -119,11 +119,7 @@ class CommandRecommenderUI(tk.Toplevel):
                 "❓ 이해하지 못했어요.\n다시 입력해 주세요."
             )
         else:
-            cmd_info = COMMANDS[command]
-            result = f"✅ 추천 명령어\n{command}\n\n"
-            result += f"📝 설명\n{cmd_info['description']}\n\n"
-            result += f"💡 예시\n{cmd_info['example']}"
-            
+            result = f"✅ 추천 명령어\n\n{command}"
             self.output_text.insert("end", result)
 
 
