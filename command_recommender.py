@@ -4,6 +4,7 @@ BG_COLOR = "#ffc0cb"     # 메인 배경
 BOX_COLOR = "#e6f2ff"    # 연파랑
 TEXT_COLOR = "#333333"
 
+
 class CommandRecommenderUI(tk.Toplevel):
     def __init__(self, master):
         super().__init__(master)
@@ -12,16 +13,16 @@ class CommandRecommenderUI(tk.Toplevel):
         self.configure(bg=BG_COLOR)
         self.resizable(False, False)
 
-        #주석 메인 창 오른쪽에 붙이기
+        # 메인 창 오른쪽에 붙이기
         master.update_idletasks()
         x = master.winfo_x() + master.winfo_width() + 5
         y = master.winfo_y()
         self.geometry(f"420x300+{x}+{y}")
 
-        #주석 메인 닫히면 같이 닫힘
+        # 메인 닫히면 같이 닫힘
         master.bind("<Destroy>", lambda e: self.destroy())
 
-        #주석 자연어 입력 라벨
+        # 자연어 입력 라벨
         tk.Label(
             self,
             text="🗣 자연어 입력",
@@ -30,7 +31,7 @@ class CommandRecommenderUI(tk.Toplevel):
             font=("Apple SD Gothic Neo", 13, "bold")
         ).pack(anchor="w", padx=20, pady=(15, 5))
 
-        #주석 자연어 입력창 (둥근)
+        # 자연어 입력창
         self.input_canvas = tk.Canvas(
             self, width=380, height=45,
             bg=BG_COLOR, highlightthickness=0
@@ -51,7 +52,10 @@ class CommandRecommenderUI(tk.Toplevel):
             15, 22, window=self.input_entry, anchor="w", width=350
         )
 
-        #주석 출력 라벨
+        # ⭐ 엔터 → 추천 실행
+        self.input_entry.bind("<Return>", self.recommend_command)
+
+        # 출력 라벨
         tk.Label(
             self,
             text="📋 추천 결과",
@@ -60,7 +64,7 @@ class CommandRecommenderUI(tk.Toplevel):
             font=("Apple SD Gothic Neo", 13, "bold")
         ).pack(anchor="w", padx=20, pady=(15, 5))
 
-        #주석 출력창 (둥근)
+        # 출력창
         self.output_canvas = tk.Canvas(
             self, width=380, height=130,
             bg=BG_COLOR, highlightthickness=0
@@ -79,15 +83,16 @@ class CommandRecommenderUI(tk.Toplevel):
             wrap="word"
         )
         self.output_canvas.create_window(
-            15, 15, window=self.output_text, anchor="nw", width=350, height=95
+            15, 15, window=self.output_text,
+            anchor="nw", width=350, height=95
         )
 
         self.output_text.insert(
             "end",
-            "👉 자연어를 입력하면\n👉 여기에 추천 결과가 표시됩니다"
+            "👉 자연어를 입력하고\n👉 Enter를 누르세요"
         )
 
-    #주석 둥근 사각형
+    # 둥근 사각형
     def _rounded_box(self, canvas, x1, y1, x2, y2, r):
         points = [
             x1+r, y1, x2-r, y1, x2, y1,
@@ -99,10 +104,31 @@ class CommandRecommenderUI(tk.Toplevel):
             points, smooth=True, fill=BOX_COLOR, outline=BOX_COLOR
         )
 
-print("### LOADED kyeong/command_recommender.py ###")
+    # ⭐ 추천 로직 연결
+    def recommend_command(self, event=None):
+        user_input = self.input_entry.get().strip()
+        if not user_input:
+            return
+
+        command = nlp_to_command(user_input)
+
+        self.output_text.delete("1.0", "end")
+        if command == "UNKNOWN":
+            self.output_text.insert(
+                "end",
+                "❓ 이해하지 못했어요.\n다시 입력해 주세요."
+            )
+        else:
+            self.output_text.insert(
+                "end",
+                f"✅ 추천 명령어\n\n{command}"
+            )
+
+
+print("### LOADED command_recommender.py ###")
 
 # ==============================
-# Command Knowledge Base (JSON 기반)
+# Command Knowledge Base
 # ==============================
 
 COMMANDS = {
@@ -130,7 +156,6 @@ COMMANDS = {
 def nlp_to_command(user_input: str) -> str:
     text = user_input.lower()
 
-    # 1️⃣ 삭제 계열 (위험 우선)
     if "강제로" in text:
         return "rm -rf"
     if "폴더" in text and "삭제" in text:
@@ -138,11 +163,9 @@ def nlp_to_command(user_input: str) -> str:
     if "삭제" in text or "지워" in text:
         return "rm"
 
-    # 2️⃣ 옵션 명령
     if "자세히" in text or "상세" in text:
         return "ls -l"
 
-    # 3️⃣ 기본 명령
     if "목록" in text or "파일" in text or "폴더" in text:
         return "ls"
     if "위치" in text or "어디" in text or "현재" in text:
